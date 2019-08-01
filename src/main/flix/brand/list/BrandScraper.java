@@ -95,8 +95,8 @@ public class BrandScraper {
         }
 
         writeExcel test = new writeExcel();
-        test.setOutputFile("testing.xls");
+        test.setOutputFile("data/testing.xls");
         test.write();
-        System.out.println("Please check the output file under testing.xls ");
+        System.out.println("Please check the output file under data/testing.xls ");
     }
 }

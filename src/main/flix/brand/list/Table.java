@@ -121,21 +121,6 @@ public class Table {
             ARR_TABLE.add(obj);
         }
     }
-
-
-    public static void main(String[] args) {
-        extractTable("https://en.wikipedia.org/wiki/List_of_digital_camera_brands");
-
-        System.out.println("> Printing from table");
-        for (JSONObject obj : ARR_TABLE) {
-            System.out.println(obj);
-        }
-
-        System.out.println("> Printing from list");
-        for (JSONObject obj : List.ARR_LIST) {
-            System.out.println(obj);
-        }
-    }
 }
 
 
