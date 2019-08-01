@@ -1,6 +1,12 @@
 package flix.brand.list;
 
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+
 public class Category {
+
+    private static ArrayList<String> header = new ArrayList<String>();
 
     public static String findCategory(String URL){
         if (URL.contains("List_of_")) {
@@ -15,7 +21,24 @@ public class Category {
                     .replace(" (brands)", "");
             return URL;
         }
-
         return URL;
     }
+
+
+    public static JSONObject fillMissingFields(JSONObject json){
+        if (!json.has("brand")){ json.put("brand", "NA"); }
+
+        if (!json.has("company") && json.has("brand")) { json.put("company", json.getString("brand")); }
+        else if (!json.has("company")) { json.put("company", "NA"); }
+
+        if (!json.has("product") && json.has("category")) { json.put("product", json.getString("category")); }
+        else if (!json.has("product")) { json.put("product", "NA"); }
+
+        if (!json.has("country")){ json.put("country", "NA"); }
+
+
+
+        return json;
+    }
+
 }

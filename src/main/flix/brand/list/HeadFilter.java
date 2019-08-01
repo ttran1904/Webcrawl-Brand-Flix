@@ -28,6 +28,7 @@ public class HeadFilter {
         company.add("manufacture");
         company.add("owner");
         company.add("created by");
+        company.add("provider");
 
         product = new ArrayList<String>();
         product.add("product");
@@ -56,13 +57,11 @@ public class HeadFilter {
 
 
     public static boolean boolMatchString (String str) {
-//        // Setup mapping
-//        addMapping();
-
         // Loop through string if contains word in the mapping set
         for (Map.Entry<String, ArrayList<String>> pair : all.entrySet()){
             for (String name : pair.getValue()) {
                 if (str.contains(name)){
+                    if (str.contains("product") && (str.contains("start") || str.contains("end")) ) { continue; }
                     // Get what type of header belongs to and switch boolean match to true
                     cate = pair.getKey();
                     match = true;
@@ -73,7 +72,6 @@ public class HeadFilter {
         match = false;
         return false;
     }
-
 
     public static String getMatchString() {
         // Return the header word

@@ -52,11 +52,13 @@ public class BrandScraper {
             }
 
             // Extract from end brand URL
-        } else if (!plink.contains(URL) && depth == MAX_DEPTH) {
-            if (identifyEndBrand(URL)) { endBrand.add(URL); System.out.println(">> Filtered:" + URL);}
         }
+        /* Ignore */
+//        else if (!plink.contains(URL) && depth == MAX_DEPTH) {
+//            if (identifyEndBrand(URL)) { endBrand.add(URL); System.out.println(">> Filtered:" + URL);}
+//        }
 
-        return endBrand;
+        return plink;
     }
 
 
@@ -85,16 +87,16 @@ public class BrandScraper {
         openStopWordsFile();
 
         // Get ending links
-        HashSet<String> endLinks = new BrandScraper().getPageLinks("https://en.wikipedia.org/wiki/Lists_of_brands", 0);
+        new BrandScraper().getPageLinks("https://en.wikipedia.org/wiki/Lists_of_brands", 0);
 
         // Extract tables from each page, if can
-        for (String link: plink){
+        for (String link: plink) {
             Table.extractTable(link); // Auto extract list if table doesn't work
         }
 
         writeExcel test = new writeExcel();
-        test.setOutputFile("testing3.xls");
+        test.setOutputFile("testing.xls");
         test.write();
-        System.out.println("Please check the result file under testing3.xls ");
+        System.out.println("Please check the output file under testing.xls ");
     }
 }

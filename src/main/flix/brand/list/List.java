@@ -15,44 +15,38 @@ public class List {
 
     public static ArrayList<JSONObject> ARR_LIST = new ArrayList<JSONObject>();
 
-    public List(){  // Initialize list
-    }
-
-
-    // Get all Lists for each brand lists secondary URL
+    /**
+    * Get list for each category list if Table does not work
+    */
     public static void getLists (String URL){
         try {
-            // Get list of brand names
+            // Get list of brands
             Document doc = Jsoup.connect(URL).get();
-            //Elements lists = doc.select("div.div-col.columns.column-width");
             Element content = doc.select("div.mw-content-ltr .mw-parser-output").get(0);
             Elements lists = content.select(":not(.navbox)");
 
-
-            System.out.println(">>Checking List ..." + URL);
+            System.out.println(">> Checking List ..." + URL);
             if (lists == null || lists.isEmpty()){
                 System.out.println(">>>> Does not contain: table, list");
                 return;
             }
 
-
             for (Element list : lists){
-                if (list.toString().contains("class=\"navbox")) {
+                if (list.toString().contains("class=\"navbox")) {  // Ignore class="navbox..." prefix
                     continue;
                 } else {
                     Elements li = list.select("ul li");
-                    for (Element brand : li){
-                        putArr(brand, URL);
-                    }
+                    li.select("span").remove();
+                    for (Element brand : li) { putArr(brand, URL); }  // Put in larger array ARR_LIST
                     break;
                 }
-
             }
         } catch (IOException e) { System.err.println("For '" + URL + "': " + e.getMessage()); }
     }
 
-
-    // Put all the data into Array
+    /**
+     * Put all the data into stored ARR_LIST
+     */
     public static void putArr(Element brand, String URL) throws IOException {
         JSONObject prod = getBrand(brand, URL);
         if (prod != null) {
@@ -60,30 +54,32 @@ public class List {
         }
     }
 
-
+    /**
+     * Put all the data into stored ARR_LIST
+     */
     public static String getBrandName(Element brand) { return brand.text(); }
 
 
-    // Get more info if BrandName is not enough (all the time)
+    /**
+     * Get further info of brand via a[href] link attached, if possible
+     */
     public static JSONObject getBrand(Element brand, String URL) throws IOException {
-        JSONObject prod = null;  // Info to add
+        JSONObject prod = null;
 
-        // Check link exists
-        if (!brand.select("a[href]").toString().isEmpty()) {
+
+        if (!brand.select("a[href]").toString().isEmpty()) {   // Check if link exists
             String link = brand.select("a[href]").attr("href");
 
-            if (!identifyLink(link)){ System.out.println(">> Incorrect link" + link); return null; }
+            if (!identifyLink(link)) { System.out.println(">> Incorrect link" + link); return null; }   // Filter desired links
 
-
-            // Put: category, brand, company, product, country. Before entering redlink
+            // Before entering redlink, put category & brand
             prod = new JSONObject();
             prod.put("category", Category.findCategory(URL));
             prod.put("brand", getBrandName(brand));
 
-            // Access the link
             link = "https://en.wikipedia.org" + link;
             System.out.println("Getting list link from:" + link);
-
+            // Access link
             if (!link.contains("/w/index.php?title=") || !link.contains("&action=edit&redlink=1")) {
                 Document doc = Jsoup.connect(link).get();
                 Elements infoboxRow = doc.select("table.infobox tbody tr"); // Look at infobox
@@ -93,24 +89,22 @@ public class List {
                     String header = row.select("th").text().toLowerCase();
                     String data = row.select("td").text();
 
-                    // Only check if both header and data is not empty
-                    if (!header.isEmpty() && !data.isEmpty()){
+                    if (!header.isEmpty() && !data.isEmpty()){  // Only check if both header and data is not empty
                         HeadFilter hf = new HeadFilter();
-                        if (hf.boolMatchString(header)){   // Check boolean of each type
+                        if (hf.boolMatchString(header)){
                             prod.put(hf.getMatchString(),data);
                         }
                     }
                 }
             }
         }
-
-        if (prod != null){
-            prod = missingFields(prod);
-        }
+        if (prod != null){ prod = Category.fillMissingFields(prod); }
         return prod;
     }
 
-
+    /**
+     * Identify correct link "/wiki/" or "/w/index.php?=" with the correct red link specifications
+     */
     public static boolean identifyLink(String url) throws FileNotFoundException {
         BrandScraper.openStopWordsFile();
         Set<String> stopWords = BrandScraper.stopWords;
@@ -123,34 +117,29 @@ public class List {
             }
         }
 
-
         Iterator<String> iterator = stopWords.iterator();
         while (iterator.hasNext()){
             // Filter out stop words by URL address
-            if (url.contains(iterator.next()) || url.contains("#") || url.contains(":") || url.contains("List_of")) {
+            if (url.contains(iterator.next())
+                    || url.contains("#")
+                    || url.contains(":")
+                    || url.contains("List_of")
+                    || url.contains("Lists_of_")) {
                 return false;
             }
         }
         return true;
     }
 
+    /**
+     * FIX THIS!! to replace missing company with brand that already exists
+     */
 
-    public static JSONObject missingFields(JSONObject json){
-        if (!json.has("brand")){ json.put("brand", "NA"); }
-
-        if (!json.has("company")){ json.put("company", "NA"); }
-
-        if (!json.has("product")){ json.put("product", "NA"); }
-
-        if (!json.has("country")){ json.put("country", "NA"); }
-
-        return json;
-    }
 
 
 //    // Individual link (list) URL testing
 //    public static void main(String[] args) throws IOException {
-//        getLists("https://en.wikipedia.org/wiki/List_of_toy_soldiers_brands");
+//        getLists("https://en.wikipedia.org/wiki/List_of_defunct_consumer_brands");
 //
 //        for (JSONObject obj: ARR_LIST) {
 //            System.out.println(obj);
